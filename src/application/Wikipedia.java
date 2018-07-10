@@ -7,6 +7,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Scanner;
 import java.util.stream.Collectors;
+import java.lang.System;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -32,33 +33,26 @@ public class Wikipedia {
 				searchText = nextLine;
 				
 				System.out.println("Buscando....");
-				//Search the google for Wikipedia Links
+				//Busco en google el Link de Wikipedia
 				Document google = Jsoup.connect("https://www.google.com.ar/search?q=" + URLEncoder.encode(searchText + " wikipedia", encoding)).userAgent("Mozilla/5.0").get();
 
-				//Get the first link about Wikipedia
+				//Obtengo el primer link de Wikipedia
 				String wikipediaURL = google.getElementsByTag("cite").get(0).text();
 
 				//Use Wikipedia API to get JSON File
 				String wikipediaApiJSON = "https://es.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro=&explaintext=&titles="
 						+ URLEncoder.encode(wikipediaURL.substring(wikipediaURL.lastIndexOf("/") + 1, wikipediaURL.length()), encoding);
 				
-				//Let's see what it found
-				//System.out.println(wikipediaURL);
-				//System.out.println(wikipediaApiJSON);
-				
 				//"extract":" the summary of the article
 				HttpURLConnection httpcon = (HttpURLConnection) new URL(wikipediaApiJSON).openConnection();
 				httpcon.addRequestProperty("User-Agent", "Mozilla/5.0");
 				BufferedReader in = new BufferedReader(new InputStreamReader(httpcon.getInputStream()));
 				
-				//System.out.println(in);
 				//Read line by line
 				String responseSB = in.lines().collect(Collectors.joining());
-				//System.out.println(responseSB);
 				in.close();
 				
 				//Print the result for us to see
-				//System.out.println(responseSB);
 				if(!responseSB.contains("extract")) {
 					System.out.println("Resultado de Google");
 					
@@ -66,11 +60,26 @@ public class Wikipedia {
 					google = Jsoup.connect("https://www.google.com.ar/search?q=" + URLEncoder.encode(searchText, encoding)).userAgent("Mozilla/5.0").get();
 					String googleURL = google.getElementsByTag("cite").get(0).text();
 					System.out.println(googleURL);
+					
 				}
 				else {
 					System.out.println("Resultado de Wikipedia");
 					System.out.println(wikipediaURL);
 					String result = responseSB.split("extract\":\"")[1];
+					result = result.replace("\\n"," ");
+					result = result.replace("\\u00e1","a");
+					result = result.replace("\\u00e9","é");
+					result = result.replace("\\u00ed","í");
+					result = result.replace("\\u00f3","ó");
+					result = result.replace("\\u00fa","ú");
+					result = result.replace("\\u00f1","ñ");
+					result = result.replace("\\u00fc","ü");
+					result = result.replace("\\u200b","");
+					result = result.replace("\"}}}}","");
+					result = result.replace("\\u00ab","\"");
+					result = result.replace("\\u00bb","\"");
+					result = result.replace("\\u00ba","°");
+					
 					System.out.println(result);
 				}
 
